@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { EMAILS } from "@/data/emails11";
 
-<<<<<<< HEAD
 // Map the `EMAILS` export into a UI-friendly shape used across this client component.
 const DISPLAY_EMAILS = EMAILS.map((e) => ({
   id: e.id,
@@ -13,92 +12,74 @@ const DISPLAY_EMAILS = EMAILS.map((e) => ({
   size: e.sizeKB ?? 0,
   body: e.body,
 }));
-=======
-import { useState, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-"use client";
-import React, { useState } from "react";
-import { EMAILS } from "@/data/emails11";
 
-// Map the `EMAILS` export into a UI-friendly shape used across this client component.
-const DISPLAY_EMAILS = EMAILS.map((e) => ({
-  id: e.id,
-  from: e.from?.name ?? String(e.from),
-  subject: e.subject,
-  category: (e.labels && e.labels[0] ? String(e.labels[0]).toLowerCase() : "inbox"),
-  read: Boolean(e.read),
-  size: e.sizeKB ?? 0,
-  body: e.body,
-}));
+type Page = 'dashboard' | 'scanning' | 'review' | 'impact';
 
-type Page = "dashboard" | "scanning" | "review" | "impact";
-
-export default function App() {
-  const [currentPage, setCurrentPage] = useState<Page>("dashboard");
+function App() {
+  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [scanProgress, setScanProgress] = useState(0);
   const [automationOpen, setAutomationOpen] = useState(false);
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
   const [scannedEmails, setScannedEmails] = useState<any[]>([]);
   const [lifetimeImpact, setLifetimeImpact] = useState({ co2: 2.3, storage: 75 });
-
-  async function classifyEmailsClient(emails: any[], model = "llama3") {
-    const res = await fetch("/api/scan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+  async function classifyEmailsClient(emails: any[], model = 'llama3') {
+    const res = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ emails, model }),
     });
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Unknown error" }));
-      throw new Error(err.error || "Scan failed");
+      const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(err.error || 'Scan failed');
     }
     return res.json();
   }
 
   const handleScan = async () => {
     setScanProgress(0);
-    setCurrentPage("scanning");
+    setCurrentPage('scanning');
 
-    const interval = setInterval(() =>
-      setScanProgress((p) => Math.min(95, p + Math.floor(Math.random() * 8) + 3)),
-      200
-    );
+    // animate progress while the server works
+    const interval = setInterval(() => setScanProgress(p => Math.min(95, p + Math.floor(Math.random() * 8) + 3)), 200);
 
     try {
+      // send a reasonable subset to avoid huge payloads
       const subset = EMAILS.slice(0, 20);
-      const json = await classifyEmailsClient(subset, "llama3");
+      const json = await classifyEmailsClient(subset, 'llama3');
 
+      // json.results is [{ emailId, classification }, ...]
       const resultsMap = new Map<string, any>();
       (json.results ?? []).forEach((r: any) => resultsMap.set(r.emailId, r.classification));
 
-      const merged = subset.map((e) => {
-        const display = DISPLAY_EMAILS.find((d) => d.id === e.id);
+      // Normalize merged results for the UI (keep simple fields: id, from, subject, category, size)
+      const merged = subset.map(e => {
+        const display = DISPLAY_EMAILS.find(d => d.id === e.id);
         return {
           id: e.id,
           from: display?.from ?? e.from?.name ?? String(e.from),
           subject: e.subject,
-          category: display?.category ?? (e.labels && e.labels[0] ? String(e.labels[0]).toLowerCase() : "inbox"),
+          category: display?.category ?? (e.labels && e.labels[0] ? String(e.labels[0]).toLowerCase() : 'inbox'),
           read: Boolean(e.read),
           size: e.sizeKB ?? 0,
           body: e.body,
-          decision: resultsMap.get(e.id)?.decision ?? "REVIEW",
+          decision: resultsMap.get(e.id)?.decision ?? 'REVIEW',
           confidence: resultsMap.get(e.id)?.confidence ?? 0.5,
-          reason: resultsMap.get(e.id)?.reason ?? "No reason provided",
+          reason: resultsMap.get(e.id)?.reason ?? 'No reason provided',
         };
       });
 
       setScannedEmails(merged);
-      setSelectedEmails(new Set(merged.filter((m) => m.decision === "DELETE").map((m) => m.id)));
+      setSelectedEmails(new Set(merged.filter(m => m.decision === 'DELETE').map(m => m.id)));
 
       setScanProgress(100);
       clearInterval(interval);
-      setTimeout(() => setCurrentPage("review"), 400);
+      setTimeout(() => setCurrentPage('review'), 400);
     } catch (err: any) {
       clearInterval(interval);
       setScanProgress(0);
-      setCurrentPage("dashboard");
-      console.error("Scan failed:", err?.message ?? err);
-      alert("Failed to run scan: " + (err?.message ?? "unknown"));
+      setCurrentPage('dashboard');
+      console.error('Scan failed:', err?.message ?? err);
+      alert('Failed to run scan: ' + (err?.message ?? 'unknown'));
     }
   };
 
@@ -109,452 +90,119 @@ export default function App() {
     }, 0);
 
     setLifetimeImpact({
-      co2: lifetimeImpact.co2 + totalSize * 0.0001,
+      co2: lifetimeImpact.co2 + (totalSize * 0.0001),
       storage: lifetimeImpact.storage + totalSize,
     });
 
-    setCurrentPage("impact");
+    setCurrentPage('impact');
   };
 
   return (
     <div>
-      {currentPage === "dashboard" && (
-        <DashboardPage onScan={handleScan} onAutomation={() => setAutomationOpen(true)} lifetimeImpact={lifetimeImpact} />
+      {currentPage === 'dashboard' && (
+        <DashboardPage 
+          onScan={handleScan}
+          onAutomation={() => setAutomationOpen(true)}
+          lifetimeImpact={lifetimeImpact}
+        />
       )}
-
-      {currentPage === "scanning" && <ScanningPage progress={scanProgress} />}
-
-      {currentPage === "review" && (
-        <ReviewPage
+      
+      {currentPage === 'scanning' && (
+        <ScanningPage progress={scanProgress} />
+      )}
+      
+      {currentPage === 'review' && (
+        <ReviewPage 
           emails={scannedEmails}
           selectedIds={selectedEmails}
-          onToggle={(id: string) => {
+          onToggle={(id) => {
             const newSet = new Set(selectedEmails);
             if (newSet.has(id)) newSet.delete(id);
             else newSet.add(id);
             setSelectedEmails(newSet);
           }}
-          onBack={() => setCurrentPage("dashboard")}
+          onBack={() => setCurrentPage('dashboard')}
           onConfirm={handleDelete}
         />
       )}
-
-      {currentPage === "impact" && (
-        <ImpactPage count={selectedEmails.size} onBack={() => setCurrentPage("dashboard")} lifetimeImpact={lifetimeImpact} />
+      
+      {currentPage === 'impact' && (
+        <ImpactPage 
+          count={selectedEmails.size}
+          onBack={() => setCurrentPage('dashboard')}
+          lifetimeImpact={lifetimeImpact}
+        />
       )}
-
-      {automationOpen && <AutomationModal onClose={() => setAutomationOpen(false)} />}
+      
+      {automationOpen && (
+        <AutomationModal onClose={() => setAutomationOpen(false)} />
+      )}
     </div>
   );
 }
 
 // ===== DASHBOARD PAGE =====
 function DashboardPage({ onScan, onAutomation, lifetimeImpact }: any) {
-  const [activeCategory, setActiveCategory] = useState("inbox");
-
-  const filteredEmails = activeCategory === "inbox" ? DISPLAY_EMAILS : DISPLAY_EMAILS.filter((email) => email.category === activeCategory);
-
+  const [activeCategory, setActiveCategory] = useState('inbox');
+  
+  const filteredEmails = activeCategory === 'inbox' 
+    ? DISPLAY_EMAILS 
+    : DISPLAY_EMAILS.filter(email => email.category === activeCategory);
+  
   const categories = [
-    { name: "inbox", label: "Inbox", count: DISPLAY_EMAILS.length },
-    { name: "primary", label: "Primary", count: DISPLAY_EMAILS.filter((e) => e.category === "primary").length },
-    { name: "spam", label: "Spam", count: DISPLAY_EMAILS.filter((e) => e.category === "spam").length },
-    { name: "promotions", label: "Promotions", count: DISPLAY_EMAILS.filter((e) => e.category === "promotions").length },
+    { name: 'inbox', label: 'Inbox', count: DISPLAY_EMAILS.length },
+    { name: 'primary', label: 'Primary', count: DISPLAY_EMAILS.filter(e => e.category === 'primary').length },
+    { name: 'spam', label: 'Spam', count: DISPLAY_EMAILS.filter(e => e.category === 'spam').length },
+    { name: 'promotions', label: 'Promotions', count: DISPLAY_EMAILS.filter(e => e.category === 'promotions').length },
   ];
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f5f5f5", fontFamily: "system-ui, -apple-system, sans-serif" }}>
-      <div style={{ backgroundColor: "white", padding: "1rem 2rem", borderBottom: "2px solid #e0e0e0", display: "flex", alignItems: "center", gap: "0.75rem" }}>
-        <img src="/carbonMailLogo.png" alt="Carbon Mail" style={{ width: 36, height: 36, objectFit: "contain" }} />
-        <h1 style={{ margin: 0, fontSize: "1.5rem", fontWeight: "bold" }}>Carbon Mail</h1>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      {/* Top Bar */}
+      <div style={{ backgroundColor: 'white', padding: '1rem 2rem', borderBottom: '2px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <img src="/carbonMailLogo.png" alt="Carbon Mail" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+        <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>Carbon Mail</h1>
       </div>
 
-      <div style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url(/wapepe.png)", padding: "2rem" }}>
-        <h2 style={{ margin: "0 0 1rem 0", fontSize: "1.25rem" }}>Dashboard</h2>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
+      {/* Dashboard */}
+      <div style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url(/wapepe.png)', padding: '2rem' }}>
+        <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem' }}>Dashboard</h2>
+        
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
           <StatCard title="Total Emails" value={DISPLAY_EMAILS.length.toString()} color="#71a200" />
           <StatCard title="Appx. CO₂ Saved" value={`${lifetimeImpact.co2.toFixed(1)} kg`} color="#71a200" />
-          <StatCard title="Appx. Storage Freed" value={`${lifetimeImpact.storage} KB`} color="#71a200" />
+          <StatCard title="Appx. Water Saved" value={`${lifetimeImpact.storage} L`} color="#71a200" />
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem", borderBottom: "2px solid #e0e0e0", paddingBottom: "1rem", marginBottom: "2rem" }}>
-          {categories.map((cat) => (
+        {/* Tabs */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '2px solid #e0e0e0', paddingBottom: '1rem', marginBottom: '2rem' }}>
+          {categories.map(cat => (
             <button key={cat.name} onClick={() => setActiveCategory(cat.name)} style={{
-              padding: "0.5rem 1rem",
-              border: activeCategory === cat.name ? "2px solid #a3cf90" : "2px solid #e0e0e0",
-              borderRadius: "6px",
-              backgroundColor: activeCategory === cat.name ? "#f0fdf4" : "white",
-              cursor: "pointer",
-              fontSize: "1rem",
-              fontWeight: activeCategory === cat.name ? "bold" : "normal",
-              color: activeCategory === cat.name ? "#396b23" : "#666",
+              padding: '0.5rem 1rem', border: activeCategory === cat.name ? '2px solid #a3cf90' : '2px solid #e0e0e0',
+              borderRadius: '6px', backgroundColor: activeCategory === cat.name ? '#f0fdf4' : 'white',
+              cursor: 'pointer', fontSize: '1rem', fontWeight: activeCategory === cat.name ? 'bold' : 'normal',
+              color: activeCategory === cat.name ? '#396b23' : '#666'
             }}>
               {cat.label} ({cat.count})
             </button>
           ))}
-
-          <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem" }}>
-            <button onClick={onAutomation} style={{ padding: "0.5rem 1rem", border: "2px solid #e0e0e0", borderRadius: "6px", backgroundColor: "white", cursor: "pointer", fontSize: "0.9rem" }}>
+          
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+            <button onClick={onAutomation} style={{ padding: '0.5rem 1rem', border: '2px solid #e0e0e0', borderRadius: '6px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.9rem' }}>
               Automation
             </button>
-            <button onClick={onScan} style={{ padding: "0.5rem 1.5rem", border: "none", borderRadius: "6px", backgroundColor: "#10b981", color: "white", cursor: "pointer", fontSize: "0.9rem", fontWeight: "bold" }}>
+            <button onClick={onScan} style={{ padding: '0.5rem 1.5rem', border: 'none', borderRadius: '6px', backgroundColor: '#10b981', color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold' }}>
               Clean up
             </button>
           </div>
         </div>
 
-        <div>
-          {filteredEmails.map((email) => (
-            <EmailRow key={email.id} email={email} />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ===== SCANNING PAGE =====
-function ScanningPage({ progress }: { progress: number }) {
-  return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "system-ui" }}>
-      <div style={{ backgroundColor: "white", padding: "3rem", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", width: "500px", textAlign: "center" }}>
-        <h2 style={{ fontSize: "1.5rem", marginBottom: "0.5rem", fontWeight: "bold" }}>Scanning Emails with AI</h2>
-        <p style={{ color: "#666", marginBottom: "2rem" }}>Analyzing metadata with local AI model...</p>
-
-        <div style={{ width: "100%", height: "20px", backgroundColor: "#e0e0e0", borderRadius: "10px", overflow: "hidden", marginBottom: "1rem" }}>
-          <div style={{ width: `${progress}%`, height: "100%", backgroundColor: "#a3cf90", transition: "width 0.3s ease" }} />
-        </div>
-
-        <p style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#598745" }}>{progress}%</p>
-
-        <div style={{ marginTop: "2rem", padding: "1rem", backgroundColor: "#a3cf90", borderRadius: "6px", border: "1px solid #10b981" }}>
-          <p style={{ fontSize: "0.875rem", color: "#598745", margin: 0 }}>
-            All analysis happens locally on your device. No data leaves your machine.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ===== REVIEW PAGE =====
-function ReviewPage({ emails, selectedIds, onToggle, onBack, onConfirm }: any) {
-  const deletableEmails = emails.filter((e: any) => e.decision === "DELETE");
-  const totalSize = Array.from(selectedIds).reduce((acc: number, id: any) => {
-    const email = emails.find((e: any) => e.id === id);
-    return acc + (email?.size || 0);
-  }, 0);
-
-  return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f5f5f5", fontFamily: "system-ui" }}>
-      <div style={{ backgroundColor: "white", padding: "1rem 2rem", borderBottom: "2px solid #e0e0e0", display: "flex", alignItems: "center", gap: "0.75rem" }}>
-        <img src="/carbonMailLogo.png" alt="Carbon Mail" style={{ width: 28, height: 28, objectFit: "contain" }} />
-        <h1 style={{ margin: 0, fontSize: "1.5rem", fontWeight: "bold" }}>Carbon Mail</h1>
-      </div>
-
-      <div style={{ margin: "2rem", backgroundColor: "white", padding: "2rem", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-        <h2 style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>Review Deletable Emails</h2>
-        <p style={{ color: "#666", marginBottom: "2rem" }}>
-          AI found {deletableEmails.length} emails that can be deleted. Review and confirm.
-        </p>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
-          <div style={{ padding: "1rem" }}>
-            <div style={{ fontSize: "0.875rem", color: "#666" }}>Selected</div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#71a200" }}>{selectedIds.size}</div>
-          </div>
-          <div style={{ padding: "1rem" }}>
-            <div style={{ fontSize: "0.875rem", color: "#666" }}>Total Size</div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#71a200" }}>{totalSize} KB</div>
-          </div>
-          <div style={{ padding: "1rem" }}>
-            <div style={{ fontSize: "0.875rem", color: "#666" }}>Appx. CO₂ Saved</div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#71a200" }}>{(totalSize * 0.0001).toFixed(3)} kg</div>
-          </div>
-        </div>
-
-        <div style={{ border: "2px solid #e0e0e0", borderRadius: "8px", maxHeight: "400px", overflowY: "auto", marginBottom: "2rem" }}>
-          {deletableEmails.map((email: any) => (
-            <div key={email.id} style={{ padding: "1rem", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "start", gap: "1rem" }}>
-              <input type="checkbox" checked={selectedIds.has(email.id)} onChange={() => onToggle(email.id)} style={{ width: "18px", height: "18px", cursor: "pointer", marginTop: "4px" }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: "bold", marginBottom: "0.25rem" }}>{email.from} — {email.subject}</div>
-                <div style={{ fontSize: "0.875rem", color: "#666", marginBottom: "0.5rem" }}>{email.size} KB • {email.category}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem", backgroundColor: email.decision === "DELETE" ? "#fee2e2" : "#dcfce7", color: email.decision === "DELETE" ? "#991b1b" : "#166534", borderRadius: "4px", fontWeight: "bold" }}>{email.decision}</span>
-                  <span style={{ fontSize: "0.75rem", color: "#999" }}>{email.reason} ({Math.round(email.confidence * 100)}% confidence)</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <button onClick={onBack} style={{ padding: "0.75rem 1.5rem", border: "2px solid #e0e0e0", borderRadius: "6px", backgroundColor: "white", cursor: "pointer", fontSize: "1rem" }}>← Back</button>
-          <button onClick={onConfirm} disabled={selectedIds.size === 0} style={{ padding: "0.75rem 2rem", border: "none", borderRadius: "6px", backgroundColor: selectedIds.size > 0 ? "#ef4444" : "#ccc", color: "white", cursor: selectedIds.size > 0 ? "pointer" : "not-allowed", fontSize: "1rem", fontWeight: "bold" }}>Delete {selectedIds.size} Emails</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ===== IMPACT PAGE =====
-function ImpactPage({ count, onBack, lifetimeImpact }: any) {
-  return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "system-ui" }}>
-      <div style={{ backgroundColor: "white", padding: "3rem", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", width: "500px", textAlign: "center" }}>
-        <h2 style={{ fontSize: "2rem", marginBottom: "0.5rem", fontWeight: "bold" }}>Cleanup Complete!</h2>
-        <p style={{ color: "#666", marginBottom: "2rem" }}>You've successfully deleted {count} emails</p>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
-          <div style={{ padding: "1.5rem", border: "2px solid #71a200", borderRadius: "8px", backgroundColor: "#f0fdf4" }}>
-            <div style={{ fontSize: "0.875rem", color: "#166534" }}>Appx. CO₂ Saved</div>
-            <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#71a200" }}>{lifetimeImpact.co2.toFixed(1)} kg</div>
-          </div>
-          <div style={{ padding: "1.5rem", border: "2px solid #3b82f6", borderRadius: "8px", backgroundColor: "#eff6ff" }}>
-            <div style={{ fontSize: "0.875rem", color: "#1e40af" }}>Storage Saved</div>
-            <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#3b82f6" }}>{lifetimeImpact.storage} MB</div>
-          </div>
-          <div style={{ padding: "1.5rem", border: "2px solid #3b82f6", borderRadius: "8px", backgroundColor: "#eff6ff" }}>
-            <div style={{ fontSize: "0.875rem", color: "#1e40af" }}>Appx. Electricity Saved</div>
-            <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#3b82f6" }}>{lifetimeImpact.electricity ?? "—"} MB</div>
-          </div>
-        </div>
-
-        <div style={{ padding: "1rem", backgroundColor: "#f0fdf4", borderRadius: "6px", border: "1px solid #598745", marginBottom: "2rem" }}>
-          <p style={{ fontSize: "0.875rem", color: "#598745", margin: 0 }}>Appx. Lifetime Impact: {lifetimeImpact.co2.toFixed(1)} kg CO₂ saved</p>
-        </div>
-
-        <button onClick={onBack} style={{ padding: "0.75rem 2rem", border: "none", borderRadius: "6px", backgroundColor: "#598745", color: "white", cursor: "pointer", fontSize: "1rem", fontWeight: "bold", width: "100%" }}>Back to Inbox</button>
-      </div>
-    </div>
-  );
-}
-
-// ===== AUTOMATION MODAL =====
-function AutomationModal({ onClose }: any) {
-  const [enabled, setEnabled] = useState(false);
-  const [schedule, setSchedule] = useState("weekly");
-  const [target, setTarget] = useState("ai-recommended");
-
-  return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "system-ui" }}>
-      <div style={{ backgroundColor: "white", padding: "2rem", borderRadius: "8px", width: "500px", maxWidth: "90%" }}>
-        <h2 style={{ fontSize: "1.5rem", marginBottom: "1.5rem", fontWeight: "bold" }}>⚙️ Auto Clean Settings</h2>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", padding: "1rem", border: "2px solid #e0e0e0", borderRadius: "6px" }}>
-          <span style={{ fontWeight: "bold" }}>Auto Deletion</span>
-          <label style={{ position: "relative", display: "inline-block", width: "60px", height: "30px" }}>
-            <input type="checkbox" checked={enabled} onChange={(e) => setEnabled((e.target as HTMLInputElement).checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-            <span style={{ position: "absolute", cursor: "pointer", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: enabled ? "#10b981" : "#ccc", borderRadius: "30px", transition: "0.3s" }}>
-              <span style={{ position: "absolute", height: "22px", width: "22px", left: enabled ? "34px" : "4px", bottom: "4px", backgroundColor: "white", borderRadius: "50%", transition: "0.3s" }} />
-            </span>
-          </label>
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{ fontWeight: "bold", marginBottom: "0.5rem" }}>Clean Strategy</div>
-          {["ai-recommended", "promo-spam", "old-unread"].map((option) => (
-            <label key={option} style={{ display: "block", padding: "0.75rem", border: target === option ? "2px solid #10b981" : "2px solid #e0e0e0", borderRadius: "6px", marginBottom: "0.5rem", cursor: "pointer", backgroundColor: target === option ? "#f0fdf4" : "white" }}>
-              <input type="radio" name="target" value={option} checked={target === option} onChange={(e) => setTarget((e.target as HTMLInputElement).value)} style={{ marginRight: "0.5rem" }} />
-              {option === "ai-recommended" && "🤖 AI-recommended (uses local LLM)"}
-              {option === "promo-spam" && "Promotions & Spam only"}
-              {option === "old-unread" && "All unread emails older than 1 year"}
-            </label>
-          ))}
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{ fontWeight: "bold", marginBottom: "0.5rem" }}>Schedule</div>
-          <select value={schedule} onChange={(e) => setSchedule((e.target as HTMLSelectElement).value)} style={{ width: "100%", padding: "0.75rem", border: "2px solid #e0e0e0", borderRadius: "6px", fontSize: "1rem", cursor: "pointer" }}>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly (Sunday)</option>
-            <option value="monthly">Monthly (1st of month)</option>
-          </select>
-        </div>
-
-        <div style={{ padding: "1rem", backgroundColor: "#f0fdf4", borderRadius: "6px", border: "1px solid #10b981", marginBottom: "1.5rem" }}>
-          <p style={{ fontSize: "0.875rem", color: "#166534", margin: 0 }}>🔒 All analysis happens locally on your device using open-source AI. No data leaves your machine.</p>
-        </div>
-
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button onClick={onClose} style={{ flex: 1, padding: "0.75rem", border: "2px solid #e0e0e0", borderRadius: "6px", backgroundColor: "white", cursor: "pointer", fontSize: "1rem" }}>Cancel</button>
-          <button onClick={onClose} style={{ flex: 1, padding: "0.75rem", border: "none", borderRadius: "6px", backgroundColor: "#10b981", color: "white", cursor: "pointer", fontSize: "1rem", fontWeight: "bold" }}>Save Settings</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Helper Components
-function StatCard({ title, value, color }: any) {
-  return (
-    <div style={{ padding: "1.5rem", borderRadius: "8px", backgroundColor: "white", boxShadow: "8px 8px 8px rgba(0,0,0,0.3)" }}>
-      <div style={{ fontSize: "0.875rem", color: "#666", marginBottom: "0.5rem" }}>{title}</div>
-      <div style={{ fontSize: "1.75rem", fontWeight: "bold", color }}>{value}</div>
-    </div>
-  );
-}
-
-function EmailRow({ email }: any) {
-  return (
-    <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", gap: "1rem", backgroundColor: email.read ? "#fafafa" : "white", cursor: "pointer" }}>
-      <input type="checkbox" style={{ width: "18px", height: "18px", cursor: "pointer" }} />
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: email.read ? "normal" : "bold", marginBottom: "0.25rem" }}>{email.from}</div>
-        <div style={{ fontSize: "0.875rem", color: "#666" }}>{email.subject}</div>
-      </div>
-      <div style={{ fontSize: "0.75rem", color: "#999" }}>2h ago</div>
-    </div>
-  );
-}
-          <ScanningView
-            status={scanStatus}
-            progress={scanProgress}
-            error={scanError}
-            onCancel={backToInbox}
-            onRetry={startScan}
-          />
-        )}
-
-        {view === "review" && (
-          <ReviewView
-            emails={reviewEmails}
-            allEmails={emails}
-            scanResults={scanResults}
-            selectedIds={selectedIds}
-            toggleEmail={toggleEmail}
-            toggleAll={toggleAll}
-            onBack={backToInbox}
-            onConfirm={() => setView("confirm")}
-            hasSelection={selectedCount > 0}
-          />
-        )}
-
-        {view === "confirm" && (
-          <ConfirmView
-            selectedCount={selectedCount}
-            totalSizeDisplay={totalSizeDisplay}
-            co2Saved={co2Saved}
-            onBack={() => setView("review")}
-            onDelete={handleDelete}
-          />
-        )}
-
-        {view === "impact" && (
-          <ImpactView
-            co2Saved={calcCo2Saved(lastDeletedSizeKB).toFixed(4)}
-            energySaved={calcEnergySaved(lastDeletedSizeKB).toFixed(4)}
-            deletedCount={lastDeletedCount}
-            sizeFreed={formatSize(lastDeletedSizeKB)}
-            lifetimeCo2={lifetimeImpact.co2SavedKg}
-            onBack={backToInbox}
-          />
-        )}
-      </main>
-
-      {/* Auto Clean Modal */}
-      <Dialog open={autoCleanOpen} onOpenChange={setAutoCleanOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Settings className="size-5" />
-              Auto Clean Settings
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6 py-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="auto-delete" className="text-sm font-medium">
-                Auto Deletion
-              </Label>
-              <Switch
-                id="auto-delete"
-                checked={autoCleanEnabled}
-                onCheckedChange={setAutoCleanEnabled}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Clean Strategy</Label>
-              <RadioGroup value={cleanTarget} onValueChange={setCleanTarget}>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="ai-recommended" id="ai-recommended" />
-                  <Label htmlFor="ai-recommended" className="font-normal text-sm">
-                    <span className="flex items-center gap-1.5">
-                      <Brain className="size-3.5 text-purple-600" />
-                      AI-recommended (uses local LLM)
-                    </span>
-                  </Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="promo-spam" id="promo-spam" />
-                  <Label htmlFor="promo-spam" className="font-normal text-sm">
-                    Promotions & Spam only
-                  </Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="old-unread" id="old-unread" />
-                  <Label htmlFor="old-unread" className="font-normal text-sm">
-                    All unread emails older than 1 year
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Schedule</Label>
-              <div className="flex gap-3">
-                <div className="space-y-1.5">
-                  <span className="text-xs text-muted-foreground">Every</span>
-                  <Select value={schedule} onValueChange={setSchedule}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {schedule !== "daily" && (
-                  <div className="space-y-1.5">
-                    <span className="text-xs text-muted-foreground">Day</span>
-                    <Select value={scheduleDay} onValueChange={setScheduleDay}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="monday">Monday</SelectItem>
-                        <SelectItem value="tuesday">Tuesday</SelectItem>
-                        <SelectItem value="wednesday">Wednesday</SelectItem>
-                        <SelectItem value="thursday">Thursday</SelectItem>
-                        <SelectItem value="friday">Friday</SelectItem>
-                        <SelectItem value="saturday">Saturday</SelectItem>
-                        <SelectItem value="sunday">Sunday</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 space-y-2">
-              <p className="text-sm text-emerald-800 flex items-center gap-1.5">
-                <Leaf className="size-4" />
-                Estimated monthly impact: ~
-                {calcCo2Saved(potentialSizeKB / 12).toFixed(2)} kg
-                CO&#x2082; saved
-              </p>
-            </div>
-
-            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-              <p className="text-xs text-blue-800 flex items-center gap-1.5">
-                <Shield className="size-3.5" />
-                All analysis happens locally on your device using open-source AI. No data leaves your machine.
-              </p>
-            </div>
->>>>>>> e71f8c188fab5325206e102e56b3e3447a063b50
+        {/* Email List */}
+          <div>
+            {filteredEmails.map(email => (
+              <EmailRow key={email.id} email={email} />
+            ))}
           </div>
       </div>
     </div>
