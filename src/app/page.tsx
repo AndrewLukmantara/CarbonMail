@@ -115,7 +115,7 @@ function App() {
         <ReviewPage 
           emails={scannedEmails}
           selectedIds={selectedEmails}
-          onToggle={(id) => {
+          onToggle={(id: string) => {
             const newSet = new Set(selectedEmails);
             if (newSet.has(id)) newSet.delete(id);
             else newSet.add(id);
@@ -157,15 +157,16 @@ function DashboardPage({ onScan, onAutomation, lifetimeImpact }: any) {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', fontFamily: "'Lexend Deca', sans-serif" }}>
       {/* Top Bar */}
       <div style={{ backgroundColor: 'white', padding: '1rem 2rem', borderBottom: '2px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <img src="/carbonMailLogo.png" alt="Carbon Mail" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+        <img src="logo-removebg-preview.png" alt="Carbon Mail" style={{ width: 36, height: 36, objectFit: 'contain' }} />
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>Carbon Mail</h1>
       </div>
 
       {/* Dashboard */}
       <div style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url(/wapepe.png)', padding: '2rem' }}>
+      <div style={{ backgroundColor: 'white', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)', borderRadius: '8px', padding: '2rem' }}>
         <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem' }}>Dashboard</h2>
         
         {/* Stats */}
@@ -192,17 +193,20 @@ function DashboardPage({ onScan, onAutomation, lifetimeImpact }: any) {
             <button onClick={onAutomation} style={{ padding: '0.5rem 1rem', border: '2px solid #e0e0e0', borderRadius: '6px', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.9rem' }}>
               Automation
             </button>
-            <button onClick={onScan} style={{ padding: '0.5rem 1.5rem', border: 'none', borderRadius: '6px', backgroundColor: '#10b981', color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold' }}>
+            <button onClick={onScan} style={{ padding: '0.5rem 1.5rem', border: 'none', borderRadius: '6px', backgroundColor: '#71a200', color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold' }}>
               Clean up
             </button>
           </div>
         </div>
+        </div>
 
         {/* Email List */}
-          <div>
-            {filteredEmails.map(email => (
-              <EmailRow key={email.id} email={email} />
-            ))}
+          <div style={{ marginTop: '2rem', backgroundColor: 'white', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)', borderRadius: '8px', overflow: 'hidden' }}>
+            <div>
+              {filteredEmails.map(email => (
+                <EmailRow key={email.id} email={email} />
+              ))}
+            </div>
           </div>
       </div>
     </div>
@@ -212,7 +216,7 @@ function DashboardPage({ onScan, onAutomation, lifetimeImpact }: any) {
 // ===== SCANNING PAGE =====
 function ScanningPage({ progress }: { progress: number }) {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Lexend Deca', sans-serif" }}>
       <div style={{ backgroundColor: 'white', padding: '3rem', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', width: '500px', textAlign: 'center' }}>
         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}></div>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>Scanning Emails with AI</h2>
@@ -244,7 +248,7 @@ function ReviewPage({ emails, selectedIds, onToggle, onBack, onConfirm }: any) {
   }, 0);
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', fontFamily: 'system-ui' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', fontFamily: "'Lexend Deca', sans-serif" }}>
       <div style={{ backgroundColor: 'white', padding: '1rem 2rem', borderBottom: '2px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <img src="/carbonMailLogo.png" alt="Carbon Mail" style={{ width: 28, height: 28, objectFit: 'contain' }} />
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>Carbon Mail</h1>
@@ -339,7 +343,7 @@ function ReviewPage({ emails, selectedIds, onToggle, onBack, onConfirm }: any) {
 // ===== IMPACT PAGE =====
 function ImpactPage({ count, onBack, lifetimeImpact }: any) {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Lexend Deca', sans-serif" }}>
       <div style={{ backgroundColor: 'white', padding: '3rem', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', width: '500px', textAlign: 'center' }}>
         <div style={{ fontSize: '4rem', marginBottom: '1rem' }}></div>
         <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>Cleanup Complete!</h2>
@@ -383,9 +387,9 @@ function AutomationModal({ onClose }: any) {
   const [target, setTarget] = useState('ai-recommended');
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Lexend Deca', sans-serif" }}>
       <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '500px', maxWidth: '90%' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', fontWeight: 'bold' }}>⚙️ Auto Clean Settings</h2>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', fontWeight: 'bold' }}>Auto CleanUp Settings</h2>
         
         {/* Enable Toggle */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', padding: '1rem', border: '2px solid #e0e0e0', borderRadius: '6px' }}>
@@ -399,7 +403,7 @@ function AutomationModal({ onClose }: any) {
             />
             <span style={{
               position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: enabled ? '#10b981' : '#ccc', borderRadius: '30px', transition: '0.3s'
+              backgroundColor: enabled ? '#71A200' : '#ccc', borderRadius: '30px', transition: '0.3s'
             }}>
               <span style={{
                 position: 'absolute', content: '', height: '22px', width: '22px', left: enabled ? '34px' : '4px',
@@ -408,27 +412,7 @@ function AutomationModal({ onClose }: any) {
             </span>
           </label>
         </div>
-
-        {/* Clean Strategy */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Clean Strategy</div>
-          {['ai-recommended', 'promo-spam', 'old-unread'].map(option => (
-            <label key={option} style={{ display: 'block', padding: '0.75rem', border: target === option ? '2px solid #10b981' : '2px solid #e0e0e0', borderRadius: '6px', marginBottom: '0.5rem', cursor: 'pointer', backgroundColor: target === option ? '#f0fdf4' : 'white' }}>
-              <input 
-                type="radio" 
-                name="target"
-                value={option}
-                checked={target === option}
-                onChange={(e) => setTarget(e.target.value)}
-                style={{ marginRight: '0.5rem' }}
-              />
-              {option === 'ai-recommended' && '🤖 AI-recommended (uses local LLM)'}
-              {option === 'promo-spam' && 'Promotions & Spam only'}
-              {option === 'old-unread' && 'All unread emails older than 1 year'}
-            </label>
-          ))}
-        </div>
-
+        
         {/* Schedule */}
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Schedule</div>
@@ -455,7 +439,7 @@ function AutomationModal({ onClose }: any) {
           <button onClick={onClose} style={{ flex: 1, padding: '0.75rem', border: '2px solid #e0e0e0', borderRadius: '6px', backgroundColor: 'white', cursor: 'pointer', fontSize: '1rem' }}>
             Cancel
           </button>
-          <button onClick={onClose} style={{ flex: 1, padding: '0.75rem', border: 'none', borderRadius: '6px', backgroundColor: '#10b981', color: 'white', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold' }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '0.75rem', border: 'none', borderRadius: '6px', backgroundColor: '#71A200', color: 'white', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold' }}>
             Save Settings
           </button>
         </div>
@@ -467,7 +451,7 @@ function AutomationModal({ onClose }: any) {
 // Helper Components
 function StatCard({ title, value, color }: any) {
   return (
-    <div style={{ padding: '1.5rem', borderRadius: '8px', backgroundColor: 'white', boxShadow: '8px 8px 8px rgba(0,0,0,0.3)' }}>
+    <div style={{ padding: '1.5rem', borderRadius: '8px', backgroundColor: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
       <div style={{ fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem' }}>{title}</div>
       <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color }}>{value}</div>
     </div>
@@ -476,7 +460,7 @@ function StatCard({ title, value, color }: any) {
 
 function EmailRow({ email }: any) {
   return (
-    <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: email.read ? '#fafafa' : 'white', cursor: 'pointer' }}>
+    <div style={{ padding: '1.5rem', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: email.read ? '#fafafa' : 'white', cursor: 'pointer' }}>
       <input type="checkbox" style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: email.read ? 'normal' : 'bold', marginBottom: '0.25rem' }}>{email.from}</div>
