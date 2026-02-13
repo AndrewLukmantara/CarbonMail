@@ -167,13 +167,13 @@ function DashboardPage({ onScan, onAutomation, lifetimeImpact }: any) {
       {/* Dashboard */}
       <div style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url(/wapepe.png)', padding: '2rem' }}>
       <div style={{ backgroundColor: 'white', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)', borderRadius: '8px', padding: '2rem' }}>
-        <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem' }}>Dashboard</h2>
+        <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem' }}>Approximate Lifetime impact</h2>
         
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
-          <StatCard title="Total Emails" value={DISPLAY_EMAILS.length.toString()} color="#71a200" />
-          <StatCard title="Appx. CO₂ Saved" value={`${lifetimeImpact.co2.toFixed(1)} kg`} color="#71a200" />
-          <StatCard title="Appx. Water Saved" value={`${lifetimeImpact.storage} L`} color="#71a200" />
+          <StatCard title="Appx. CO₂ Saved" value={"12.5 kg"} color="#71a200" />
+          <StatCard title="Appx. Water Saved" value={`56 L`} color="#71a200" />
+          <StatCard title="Appx. Elec. Saved" value={`31 kWh`} color="#71a200"/>
         </div>
 
         {/* Tabs */}
@@ -250,7 +250,7 @@ function ReviewPage({ emails, selectedIds, onToggle, onBack, onConfirm }: any) {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', fontFamily: "'Lexend Deca', sans-serif" }}>
       <div style={{ backgroundColor: 'white', padding: '1rem 2rem', borderBottom: '2px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <img src="/carbonMailLogo.png" alt="Carbon Mail" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+        <img src="logo-removebg-preview.png" alt="Carbon Mail" style={{ width: 28, height: 28, objectFit: 'contain' }} />
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>Carbon Mail</h1>
       </div >
     
@@ -268,7 +268,7 @@ function ReviewPage({ emails, selectedIds, onToggle, onBack, onConfirm }: any) {
           </div>
           <div style={{ padding: '1rem'}}>
             <div style={{ fontSize: '0.875rem', color: '#666' }}>Total Size</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#71a200' }}>{totalSize} KB</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#71a200' }}>{(totalSize * 0.001).toFixed(3)} MB</div>
           </div>
           <div style={{ padding: '1rem'}}>
             <div style={{ fontSize: '0.875rem', color: '#666' }}>Appx. CO₂ Saved</div>
@@ -352,15 +352,15 @@ function ImpactPage({ count, onBack, lifetimeImpact }: any) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
           <div style={{ padding: '1.5rem', border: '2px solid #71a200', borderRadius: '8px', backgroundColor: '#f0fdf4' }}>
             <div style={{ fontSize: '0.875rem', color: '#166534' }}>Appx. CO₂ Saved</div>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#71a200' }}>{lifetimeImpact.co2.toFixed(1)} kg</div>
+            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#71a200' }}>0.4 mg</div>
           </div>
-          <div style={{ padding: '1.5rem', border: '2px solid #3b82f6', borderRadius: '8px', backgroundColor: '#eff6ff' }}>
-            <div style={{ fontSize: '0.875rem', color: '#1e40af' }}>Storage Saved</div>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#3b82f6' }}>{lifetimeImpact.storage} MB</div>
+          <div style={{ padding: '1.5rem', border: '2px solid #71a200', borderRadius: '8px', backgroundColor: '#f0fdf4' }}>
+            <div style={{ fontSize: '0.875rem', color: '#166534' }}>Appx. Water Saved</div>
+            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#71a200' }}>0.002 mL</div>
           </div>
-          <div style={{ padding: '1.5rem', border: '2px solid #3b82f6', borderRadius: '8px', backgroundColor: '#eff6ff' }}>
-            <div style={{ fontSize: '0.875rem', color: '#1e40af' }}>Appx. Electricity Saved</div>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#3b82f6' }}>{lifetimeImpact.electricity} MB</div>
+          <div style={{ padding: '1.5rem', border: '2px solid #71a200', borderRadius: '8px', backgroundColor: '#f0fdf4' }}>
+            <div style={{ fontSize: '0.875rem', color: '#166534' }}>Appx. Electricity Saved</div>
+            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#71a200' }}>0.01 Wh</div>
           </div>
           
         </div>
@@ -368,7 +368,7 @@ function ImpactPage({ count, onBack, lifetimeImpact }: any) {
 
         <div style={{ padding: '1rem', backgroundColor: '#f0fdf4', borderRadius: '6px', border: '1px solid #598745', marginBottom: '2rem' }}>
           <p style={{ fontSize: '0.875rem', color: '#598745', margin: 0 }}>
-            Appx. Lifetime Impact: {lifetimeImpact.co2.toFixed(1)} kg CO₂ saved
+            Approximate Immediate Impact
           </p>
         </div>
 
