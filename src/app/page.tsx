@@ -22,6 +22,7 @@ function App() {
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
   const [scannedEmails, setScannedEmails] = useState<any[]>([]);
   const [lifetimeImpact, setLifetimeImpact] = useState({ co2: 2.3, storage: 75 });
+  const [deletedEmailIds, setDeletedEmailIds] = useState<Set<string>>(new Set());
   async function classifyEmailsClient(emails: any[], model = 'llama3') {
     const res = await fetch('/api/scan', {
       method: 'POST',
@@ -94,6 +95,11 @@ function App() {
       storage: lifetimeImpact.storage + totalSize,
     });
 
+    // Add deleted emails to the deleted set
+    const newDeletedIds = new Set(deletedEmailIds);
+    selectedEmails.forEach(id => newDeletedIds.add(id));
+    setDeletedEmailIds(newDeletedIds);
+
     setCurrentPage('impact');
   };
 
@@ -104,6 +110,7 @@ function App() {
           onScan={handleScan}
           onAutomation={() => setAutomationOpen(true)}
           lifetimeImpact={lifetimeImpact}
+          deletedEmailIds={deletedEmailIds}
         />
       )}
       
@@ -129,7 +136,10 @@ function App() {
       {currentPage === 'impact' && (
         <ImpactPage 
           count={selectedEmails.size}
-          onBack={() => setCurrentPage('dashboard')}
+          onBack={() => {
+            setCurrentPage('dashboard');
+            setSelectedEmails(new Set());
+          }}
           lifetimeImpact={lifetimeImpact}
         />
       )}
@@ -142,18 +152,21 @@ function App() {
 }
 
 // ===== DASHBOARD PAGE =====
-function DashboardPage({ onScan, onAutomation, lifetimeImpact }: any) {
+function DashboardPage({ onScan, onAutomation, lifetimeImpact, deletedEmailIds }: any) {
   const [activeCategory, setActiveCategory] = useState('inbox');
   
+  // Filter out deleted emails
+  const visibleEmails = DISPLAY_EMAILS.filter(email => !deletedEmailIds.has(email.id));
+  
   const filteredEmails = activeCategory === 'inbox' 
-    ? DISPLAY_EMAILS 
-    : DISPLAY_EMAILS.filter(email => email.category === activeCategory);
+    ? visibleEmails
+    : visibleEmails.filter(email => email.category === activeCategory);
   
   const categories = [
-    { name: 'inbox', label: 'Inbox', count: DISPLAY_EMAILS.length },
-    { name: 'primary', label: 'Primary', count: DISPLAY_EMAILS.filter(e => e.category === 'primary').length },
-    { name: 'spam', label: 'Spam', count: DISPLAY_EMAILS.filter(e => e.category === 'spam').length },
-    { name: 'promotions', label: 'Promotions', count: DISPLAY_EMAILS.filter(e => e.category === 'promotions').length },
+    { name: 'inbox', label: 'Inbox', count: visibleEmails.length },
+    { name: 'primary', label: 'Primary', count: visibleEmails.filter(e => e.category === 'primary').length },
+    { name: 'spam', label: 'Spam', count: visibleEmails.filter(e => e.category === 'spam').length },
+    { name: 'promotions', label: 'Promotions', count: visibleEmails.filter(e => e.category === 'promotions').length },
   ];
 
   return (
