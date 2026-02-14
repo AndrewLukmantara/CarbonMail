@@ -128,7 +128,7 @@ function parseClassification(text: string): LLMClassification {
 
 export async function classifyEmails(
   emails: Email[],
-  model: string = "llama3"
+  model: string = "mistral"
 ): Promise<ClassifiedEmail[]> {
   // Process in batches of 5 concurrently
   const BATCH_SIZE = 5;
